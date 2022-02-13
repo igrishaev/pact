@@ -1,7 +1,9 @@
 (ns pact.core-test
   (:require
-   [pact.core :refer [then error]]
+   [pact.core :refer [then error then-fn error-fn]]
    [pact.comp-future :as future]
+
+   [manifold.deferred :as d]
 
    [clojure.string :as str]
    [clojure.test :refer [deftest testing is]]))
@@ -69,17 +71,17 @@
 
 (deftest test-comp-future-ok
 
+  (testing "simple"
 
-  #_
-  (let [fut
-        (future/future 1)
+    (let [fut
+          (future/future 1)
 
-        res
-        (-> fut
-            (then [x]
-              (inc x)))]
+          res
+          (-> fut
+              (then [x]
+                (inc x)))]
 
-    (is (= 2 @res)))
+      (is (= 2 @res))))
 
   (testing "ex type for comp future"
 
@@ -93,13 +95,7 @@
               (then [x]
                 (/ 0 0))
               (error [e]
-                e)
-              #_
-              (then [x]
-                (+ 1 x))
-              #_
-              (then [message]
-                (str "<<< " message " >>>")))]
+                e))]
 
       (is (= java.lang.ArithmeticException
              (-> res deref class)
@@ -147,11 +143,25 @@
                 (then [message]
                   (str "<<< " message " >>>")))]
 
-        (is (str/starts-with? @res "<<< java.lang.ClassCastException"))))
+        (is (str/starts-with?
+             @res "<<< java.lang.ClassCastException"))))))
 
 
+(deftest test-manifild-ok
 
-    )
+  (testing "simple"
+
+    (let [res
+          (-> (d/future 1)
+              (then [x]
+                (inc x))
+              (then-fn inc))]
+
+      (d/deferred? res)
+
+      (is (= 3 @res))
+
+      ))
 
 
   )

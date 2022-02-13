@@ -11,7 +11,7 @@
   (-then [this func]
     (d/chain this
              (fn [x]
-               (p/-then x func))))
+               (func x))))
 
   (-error [this func]
     (d/catch this (fn [x]

@@ -22,7 +22,8 @@
                                    (func x))))
                           identity)]
 
-      (a/pipe this out)
+      (a/take! this (fn [x]
+                      (a/put! out x)) )
 
       out))
 
@@ -34,6 +35,7 @@
                                    x)))
                           identity)]
 
-      (a/pipe this out)
+      (a/take! this (fn [x]
+                      (a/put! out x)) )
 
       out)))

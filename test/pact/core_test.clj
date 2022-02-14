@@ -1,7 +1,11 @@
 (ns pact.core-test
   (:require
    [pact.core :refer [then error then-fn error-fn]]
+
+   ;; extenders
    [pact.comp-future :as future]
+   [pact.manifold]
+   [pact.core-async]
 
    [clojure.core.async :as a]
    [manifold.deferred :as d]
@@ -68,6 +72,19 @@
                 (inc x)))]
 
       (is (= "Divide by zero" (ex-message e))))))
+
+
+(deftest test-mapping-ok
+
+  (is (= {:a 1 :b 2 :c 3 :d 6}
+
+         (-> {:a 1 :b 2}
+
+             (then [{:as scope :keys [a b]}]
+               (assoc scope :c (+ a b)))
+
+             (then [{:as scope :keys [a b c]}]
+               (assoc scope :d (+ a b c)))))))
 
 
 (deftest test-comp-future-ok
@@ -202,6 +219,49 @@
                   (then [x]
                     (str "+" x "+")))]
 
+      (a/>!! in 1)
+
+      (is (= "+3+" (a/<!! out)))
+
+      (a/close! in)))
+
+  (testing "recovering from an error"
+
+    (let [in (a/chan)
+          out (-> in
+                  (then [x]
+                    (/ x 0))
+                  (then [x]
+                    42)
+                  (error [e]
+                    (ex-message e))
+                  (then [message]
+                    (str "<<< " message " >>>")))]
+
       (a/put! in 1)
 
-      (is (= "+3+" (a/<!! out))))))
+      (is (= "<<< Divide by zero >>>" (a/<!! out)))
+
+      (a/close! in)))
+
+  (testing "error in error"
+
+    (let [in (a/chan)
+          out (-> in
+                  (then [x]
+                    (/ x 0))
+                  (then [x]
+                    42)
+                  (error [e]
+                    (+ 1 (ex-message e)))
+                  (error [e]
+                    (ex-message e))
+                  (then [message]
+                    (str "<<< " message " >>>")))]
+
+      (a/put! in 1)
+
+      (is (str/starts-with? (a/<!! out)
+                            "<<< class java.lang.String cannot be cast to class java.lang.Number" ))
+
+      (a/close! in))))

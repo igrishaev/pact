@@ -1,4 +1,5 @@
-(ns pact.core)
+(ns pact.core
+  (:import java.util.concurrent.Future))
 
 
 (defprotocol IPact
@@ -42,7 +43,7 @@
       (catch Throwable e
         e)))
 
-  clojure.lang.IDeref
+  Future
 
   (-then [this func]
 
@@ -71,10 +72,10 @@
 (defmacro then
   {:style/indent 1}
   [p [x] & body]
-  `(then-fn ~p (fn [~x] ~@body)))
+  `(then-fn ~p (^{:once true} fn [~x] ~@body)))
 
 
 (defmacro error
   {:style/indent 1}
   [p [e] & body]
-  `(error-fn ~p (fn [~e] ~@body)))
+  `(error-fn ~p (^{:once true} fn [~e] ~@body)))

@@ -9,10 +9,7 @@
   manifold.deferred.IDeferred
 
   (-then [this func]
-    (d/chain this
-             (fn [x]
-               (func x))))
+    (d/chain this func))
 
   (-error [this func]
-    (d/catch this (fn [e]
-                    (func e)))))
+    (d/catch this func)))

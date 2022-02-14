@@ -6,13 +6,21 @@
    clojure.core.async.impl.protocols.Channel))
 
 
-(extend-protocol core/IPact
+(defn throwable? [e]
+  (instance? Throwable e))
+
+
+(extend-protocol p/IPact
 
   Channel
 
   (-then [this func]
     (let [out
-          (a/promise-chan (map func) identity)]
+          (a/promise-chan (map (fn [x]
+                                 (if (throwable? x)
+                                   x
+                                   (func x))))
+                          identity)]
 
       (a/pipe this out)
 
@@ -20,11 +28,11 @@
 
   (-error [this func]
     (let [out
-          (a/promise-chan (map identity) (fn [e]
-                                           (try
-                                             (func e)
-                                             (catch Throwable e
-                                               e))))]
+          (a/promise-chan (map (fn [x]
+                                 (if (throwable? x)
+                                   (func x)
+                                   x)))
+                          identity)]
 
       (a/pipe this out)
 

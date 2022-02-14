@@ -3,6 +3,7 @@
    [pact.core :refer [then error then-fn error-fn]]
    [pact.comp-future :as future]
 
+   [clojure.core.async :as a]
    [manifold.deferred :as d]
 
    [clojure.string :as str]
@@ -186,3 +187,21 @@
 
       (is (str/starts-with?
            @res "class java.lang.String cannot be cast to class java.lang.Number")))))
+
+
+(deftest test-core-async-ok
+
+  (testing "simple cases"
+
+    (let [in (a/chan)
+          out (-> in
+                  (then [x]
+                    (+ 1 x))
+                  (then [x]
+                    (+ 1 x))
+                  (then [x]
+                    (str "+" x "+")))]
+
+      (a/put! in 1)
+
+      (is (= "+3+" (a/<!! out))))))

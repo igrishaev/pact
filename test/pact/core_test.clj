@@ -1,6 +1,6 @@
 (ns pact.core-test
   (:require
-   [pact.core :refer [then error then-fn error-fn]]
+   [pact.core :refer [then error then-fn error-fn failure]]
 
    ;; extenders
    [pact.comp-future :as future]
@@ -72,6 +72,21 @@
                 (inc x)))]
 
       (is (= "Divide by zero" (ex-message e))))))
+
+
+(deftest test-failure-ok
+
+  (let [res
+        (-> 1
+            (then [x]
+              (inc x))
+            (then [x]
+              (failure {:foo 42}))
+            (error [e]
+              (ex-data e)))]
+
+    (is (= {:foo 42 :ex/type :pact.core/failure}
+           res))))
 
 
 (deftest test-mapping-ok

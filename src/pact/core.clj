@@ -15,8 +15,8 @@
    (failure "Failure" data))
 
   ([message data]
-   (ex-info message (-> (or data {})
-                        (merge {:ex/type ::failure})))))
+   (throw (ex-info message (-> (or data {})
+                               (merge {:ex/type ::failure}))))))
 
 
 (extend-protocol IPact

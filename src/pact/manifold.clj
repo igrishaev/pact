@@ -14,5 +14,5 @@
                (func x))))
 
   (-error [this func]
-    (d/catch this (fn [x]
-                    (p/-error x func)))))
+    (d/catch this (fn [e]
+                    (func e)))))

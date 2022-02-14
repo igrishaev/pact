@@ -20,7 +20,7 @@
   (-error [this func]
     (.exceptionally this (reify Function
                            (apply [_ e]
-                             (p/-error (ex-cause e) func))))))
+                             (func (ex-cause e)))))))
 
 
 (defmacro future [& body]

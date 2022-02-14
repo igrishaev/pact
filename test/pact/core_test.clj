@@ -98,15 +98,10 @@
                 e))]
 
       (is (= java.lang.ArithmeticException
-             (-> res deref class)
-
-             ))
+             (-> res deref class)))
 
       (is (= "Divide by zero"
-             (-> res deref ex-message
-                 )
-
-             )))
+             (-> res deref ex-message))))
 
     (testing "recover"
 
@@ -140,14 +135,16 @@
                   (/ 0 0))
                 (error [e]
                   (+ 1 (ex-message e)))
+                (error [e]
+                  (ex-message e))
                 (then [message]
                   (str "<<< " message " >>>")))]
 
         (is (str/starts-with?
-             @res "<<< java.lang.ClassCastException"))))))
+             @res "<<< class java.lang.String cannot be cast to class java.lang.Number"))))))
 
 
-(deftest test-manifild-ok
+(deftest test-manifold-ok
 
   (testing "simple"
 
@@ -159,9 +156,33 @@
 
       (d/deferred? res)
 
-      (is (= 3 @res))
+      (is (= 3 @res))))
 
-      ))
+  (testing "recovery"
 
+    (let [res
+          (-> (d/future 1)
+              (then [x]
+                (/ x 0))
+              (error [e]
+                (ex-message e)))]
 
-  )
+      (d/deferred? res)
+
+      (is (= "Divide by zero" @res))))
+
+  (testing "error in error"
+
+    (let [res
+          (-> (d/future 1)
+              (then [x]
+                (/ x 0))
+              (error [e]
+                (+ 1 (ex-message e)))
+              (error [e]
+                (ex-message e)))]
+
+      (d/deferred? res)
+
+      (is (str/starts-with?
+           @res "class java.lang.String cannot be cast to class java.lang.Number")))))

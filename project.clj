@@ -14,14 +14,14 @@
    :url "https://www.eclipse.org/legal/epl-2.0/"}
 
   :release-tasks
-  [["vcs" "assert-committed"]
+  [#_["vcs" "assert-committed"]
    ["test"]
    ["change" "version" "leiningen.release/bump-version" "release"]
    ["vcs" "commit"]
    ["vcs" "tag" "--no-sign"]
    ["deploy"]
    ["change" "version" "leiningen.release/bump-version"]
-   ["vcs" "commit"]
+   #_["vcs" "commit"]
    ["vcs" "push"]]
 
   :dependencies

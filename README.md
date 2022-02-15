@@ -1,44 +1,114 @@
-# pact
+# Pact
 
-FIXME: description
+A small library for chaining values through forms. It's like a promise but much
+simipler.
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Lein:
 
-## Usage
+```clojure
+[com.github.igrishaev/pact "0.1.0"]
+```
 
-FIXME: explanation
+Deps.edn
 
-    $ java -jar pact-0.1.0-standalone.jar [args]
+```clojure
+{com.github.igrishaev/pact "0.1.0"}
+```
 
-## Options
+## How it works
 
-FIXME: listing of options this app accepts.
+The library declares two universe handlers: `then` and `error`. When you apply
+`then` to the "good" values, you propagate furter. Applying `error` for them
+does nothing. And vice versa: `then` for the "bad" values does nothing. Calling
+`error` on the "bad" values gives you a chance to recover the pipeline.
+
+By default, there is only one "bad" value which is an instance of
+`Throwable`. Other types are considered as positive ones. The library carries
+extensions for async data types such as `CompletableFuture`, Manifold and
+`core.async`. You only need to require their modules so they extend the `IPact`
+protocol.
 
 ## Examples
 
-...
+Import `then` and `error` macros, then chain a value with the standard `->`
+threading macro. Both `then` and `error` accept a binding vector and an
+arbitrary body.
 
-### Bugs
+```clojure
+(ns foobar
+  (:require
+   [pact.core :refer [then error]]))
 
-...
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+(-> 42
+    (then [x]
+      (-> x int str))
+    (then [x]
+      (str x "/hello")))
 
-## License
+"42/hello"
+```
 
-Copyright © 2022 FIXME
+If any exception pops up, the sequence of `then` handlers gets interrupted, and
+the `error` handler gets into play:
 
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
+```clojure
+(-> 1
+    (then [x]
+      (/ x 0))
+    (then [x]
+      (str x "/hello")) ;; won't be executed
+    (error [e]
+      (ex-message e)))
 
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+"Divide by zero"
+```
+
+The `error` handler gives you a chance to recover from the exception. If you
+return a non-exceptional data in `error`, the execution will proceed from the
+next `then` handler:
+
+```clojure
+(-> 1
+    (then [x]
+      (/ x 0))
+    (error [e]
+      (ex-message e))
+    (then [message]
+      (log/info message)))
+
+;; nil
+```
+
+The `->` macro can be nested. This is useful to capture the context for a
+possible exception:
+
+```clojure
+(-> 1
+    (then [x]
+      (+ x 1))
+    (then [x]
+      (-> x
+          (then [x]
+            (/ x 0))
+          (error [e]
+            (println "The x was" x)
+            nil))))
+
+;; The x was 2
+;; nil
+```
+
+### Complatable Future
+
+### Manifold
+
+### Core.async
+
+### Fast fail
+
+## Testing
+
+&copy; 2022 Ivan Grishaev

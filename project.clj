@@ -1,4 +1,4 @@
-(defproject com.github.igrishaev/pact "0.1.0"
+(defproject com.github.igrishaev/pact "0.1.1-SNAPSHOT"
 
   :description
   "Chaining values with ease"
@@ -14,14 +14,14 @@
    :url "https://www.eclipse.org/legal/epl-2.0/"}
 
   :release-tasks
-  [#_["vcs" "assert-committed"]
+  [["vcs" "assert-committed"]
    ["test"]
    ["change" "version" "leiningen.release/bump-version" "release"]
    ["vcs" "commit"]
    ["vcs" "tag" "--no-sign"]
    ["deploy"]
    ["change" "version" "leiningen.release/bump-version"]
-   #_["vcs" "commit"]
+   ["vcs" "commit"]
    ["vcs" "push"]]
 
   :dependencies

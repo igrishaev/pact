@@ -146,7 +146,26 @@ destructuring:
       ...))
 ```
 
-TODO Fast fail
+## Fast fail
+
+To interrupt the chain of `then` handlers, either throw an exception or use the
+`failure` function which is just a shortcut for raising a exception. The
+function takes a map or a message with a map:
+
+```clojure
+(ns foobar
+  (:require
+   [pact.core :refer [then error failure]]))
+
+(-> 1
+    (then [x]
+      (if (not= x 42)
+        (failure "It was not 42!" {:x x})
+        (+ 1 x)))
+    (error-fn ex-data))
+
+;; {:x 1 :ex/type :pact.core/failure}
+```
 
 ## Supported types
 
@@ -210,6 +229,46 @@ Once you've put an instance of Manifold deferred, the result will always be a
 deferred.
 
 ### Core.async
+
+To make the library work with core.async channels, import the `pact.core-async`
+module:
+
+```clojure
+(ns foobar
+  (:require
+   [pact.core :refer [then error]]
+   [pact.core-async]
+   [clojure.core.async :as a]))
+```
+
+Like Manifold, the `core.async` dependency should be added by you as well:
+
+```clojure
+[org.clojure/core.async "1.5.648"]
+```
+
+Now you can chain channels through the `then` and `error` actions. Internally,
+each handler takes exactly one value from a source channel and returns a new
+channel with the result. For `then`, exceptions traverse the channels being
+untouched. And instead, the `error` handler ignores ordinary values and affects
+only exceptions. Quick demo:
+
+```clojure
+(let [in (a/chan)
+      out (-> in
+              (then [x]
+                (/ x 0))
+              (error [e]
+                (ex-message e))
+              (then [message]
+                (str "<<< " message " >>>")))]
+
+  (a/put! in 1)
+
+  (a/<!! out) )
+
+;; "<<< class java.lang.String cannot be cast ..."
+```
 
 ## Testing
 

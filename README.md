@@ -14,7 +14,7 @@ Lein:
 Deps.edn
 
 ```clojure
-{com.github.igrishaev/pact "0.1.0"}
+{com.github.igrishaev/pact {:mvn/version "0.1.0"}}
 ```
 
 ## How it works
@@ -100,6 +100,55 @@ possible exception:
 ;; The x was 2
 ;; nil
 ```
+
+Despite `then` and `error` macros, the library provides the `then-fn` and
+`error-fn` functions. They are useful when you have a ready function that
+processes the value:
+
+```clojure
+(ns foobar
+  (:require
+   [pact.core :refer [then-fn error-fn]]))
+
+(-> 1
+    (then-fn inc)
+    (then-fn str))
+
+;; "2"
+
+(-> 1
+    (then [x]
+      (/ x 0))
+    (error-fn ex-message))
+
+;; "Divide by zero"
+```
+
+Chaining with `then` and `error` is especially good for maps as allowing
+destructuring:
+
+```clojure
+(-> {:db {...} :cassandra {...}}
+
+    ;; Get a user from the database and attach it to the scope.
+    (then [{:as scope :keys [db]}]
+      (let [user (jdbc/get-by-id db :users 42)]
+        (assoc scope :user user)))
+
+    ;; Having a user, get their last items from Cassandra cluster
+    ;; and attach them to the scope.
+    (then [{:as scope :keys [cassandra user]}]
+      (let [items (get-user-items cassandra user)]
+        (assoc scope :items items)))
+
+    ;; Do something more...
+    (then [...]
+      ...))
+```
+
+todo failure
+
+## Supported types
 
 ### Complatable Future
 

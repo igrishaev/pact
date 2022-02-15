@@ -1,7 +1,7 @@
 # Pact
 
 A small library for chaining values through forms. It's like a promise but much
-simipler.
+simpler.
 
 ## Installation
 
@@ -20,17 +20,21 @@ Deps.edn
 ## How it works
 
 The library declares two universe handlers: `then` and `error`. When you apply
-`then` to the "good" values, you propagate furter. Applying `error` for them
-does nothing. And vice versa: `then` for the "bad" values does nothing. Calling
-`error` on the "bad" values gives you a chance to recover the pipeline.
+them to the "good" values, you propagate further. Applying the `error` for them
+does nothing. And vice versa: `then` for the "bad" values does nothing, but
+calling `error` on "bad" values gives you a chance to recover the pipeline.
 
 By default, there is only one "bad" value which is an instance of
-`Throwable`. Other types are considered as positive ones. The library carries
-extensions for async data types such as `CompletableFuture`, Manifold and
+`Throwable`. Other types are considered positive ones. The library carries
+extensions for such async data types as `CompletableFuture`, `Manifold` and
 `core.async`. You only need to require their modules so they extend the `IPact`
 protocol.
 
 ## Examples
+
+First, import `then` and `error` macros, then chain a value with the standard
+`->` threading macro. Both then and error accept a binding vector and an
+arbitrary body.
 
 Import `then` and `error` macros, then chain a value with the standard `->`
 threading macro. Both `then` and `error` accept a binding vector and an
@@ -177,7 +181,7 @@ The following modules extend the `IPact` protocol for asynchronous types.
 
 ### Complatable Future
 
-The module `pact.comp-future` handles the `CompletableFuture` class availabe
+The module `pact.comp-future` handles the `CompletableFuture` class available
 since Java 11. The module also provides its own `future` macro to build an
 instance of `CompletableFuture`:
 
@@ -198,14 +202,14 @@ Pay attention: if you fed an instance of `CompletableFuture` to the threading
 macro, the result will always be of this type. Thus, there is a `deref` call at
 the end.
 
-Infernally, the `then` handler calls for the `.thenApply` method if a future,
-and the `error` handler boils down to `..exceptionally`.
+Infernally, the `then` handler calls for the `.thenApply` method if a future and
+the `error` handler boils down to `.exceptionally`.
 
 ### Manifold
 
 The `pact.manifold` module makes the handlers work with the amazing Manifold
 library and its types. The Pact library doesn't have Manifold dependency: you've
-got to add it by your own.
+got to add it on your own.
 
 ```clojure
 [manifold "0.1.9-alpha3"]
@@ -222,11 +226,11 @@ got to add it by your own.
 "Divide by zero"
 ```
 
-Under the hood, `then` and `error` call the `d/chain` and `d/catch` macros
-respectively.
+Under the hood, `then` and `error` handlers call the `d/chain` and `d/catch`
+macros respectively.
 
 Once you've put an instance of Manifold deferred, the result will always be a
-deferred.
+`Deferred`.
 
 ### Core.async
 

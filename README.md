@@ -101,7 +101,7 @@ possible exception:
 ;; nil
 ```
 
-Despite `then` and `error` macros, the library provides the `then-fn` and
+Besides `then` and `error` macros, the library provides the `then-fn` and
 `error-fn` functions. They are useful when you have a ready function that
 processes the value:
 
@@ -146,18 +146,73 @@ destructuring:
       ...))
 ```
 
-todo failure
+TODO Fast fail
 
 ## Supported types
 
+The `core` namespace declares the `then` and `error` handlers for the `Object`,
+`Throwable`, and `java.util.concurrent.Future` types. The `Future` values get
+dereferenced when passing to `then`.
+
+The following modules extend the `IPact` protocol for asynchronous types.
+
 ### Complatable Future
+
+The module `pact.comp-future` handles the `CompletableFuture` class availabe
+since Java 11. The module also provides its own `future` macro to build an
+instance of `CompletableFuture`:
+
+```clojure
+(-> (future/future 1)
+    (then [x]
+      (inc x))
+    (then [x]
+      (/ 0 0))
+    (error [e]
+      (ex-message e))
+    (deref))
+
+"Divide by zero"
+```
+
+Pay attention: if you fed an instance of `CompletableFuture` to the threading
+macro, the result will always be of this type. Thus, there is a `deref` call at
+the end.
+
+Infernally, the `then` handler calls for the `.thenApply` method if a future,
+and the `error` handler boils down to `..exceptionally`.
 
 ### Manifold
 
+The `pact.manifold` module makes the handlers work with the amazing Manifold
+library and its types. The Pact library doesn't have Manifold dependency: you've
+got to add it by your own.
+
+```clojure
+[manifold "0.1.9-alpha3"]
+```
+
+```clojure
+(-> (d/future 1)
+    (then [x]
+      (/ x 0))
+    (error [e]
+      (ex-message e))
+    (deref))
+
+"Divide by zero"
+```
+
+Under the hood, `then` and `error` call the `d/chain` and `d/catch` macros
+respectively.
+
+Once you've put an instance of Manifold deferred, the result will always be a
+deferred.
+
 ### Core.async
 
-### Fast fail
-
 ## Testing
+
+To run the tests, do `lein test` or just `make test`.
 
 &copy; 2022 Ivan Grishaev

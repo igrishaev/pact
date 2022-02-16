@@ -175,7 +175,7 @@ dereferenced when passing to `then`.
 
 The following modules extend the `IPact` protocol for asynchronous types.
 
-### Complatable Future
+### Completable Future
 
 The module `pact.comp-future` handles the `CompletableFuture` class available
 since Java 11. The module also provides its own `future` macro to build an
@@ -198,7 +198,7 @@ Pay attention: if you fed an instance of `CompletableFuture` to the threading
 macro, the result will always be of this type. Thus, there is a `deref` call at
 the end.
 
-Infernally, the `then` handler calls for the `.thenApply` method if a future and
+Internally, the `then` handler calls for the `.thenApply` method if a future and
 the `error` handler boils down to `.exceptionally`.
 
 ### Manifold

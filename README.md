@@ -32,10 +32,6 @@ protocol.
 
 ## Examples
 
-First, import `then` and `error` macros, then chain a value with the standard
-`->` threading macro. Both then and error accept a binding vector and an
-arbitrary body.
-
 Import `then` and `error` macros, then chain a value with the standard `->`
 threading macro. Both `then` and `error` accept a binding vector and an
 arbitrary body.

@@ -1,4 +1,4 @@
-(defproject com.github.igrishaev/pact "0.1.1"
+(defproject com.github.igrishaev/pact "0.1.2-SNAPSHOT"
 
   :description
   "Chaining values with ease"

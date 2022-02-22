@@ -24,3 +24,7 @@
                                    e))
                                x))))
           c-out))
+
+
+(a/take! ch (fn [x]
+              (is (= 1 x))) )

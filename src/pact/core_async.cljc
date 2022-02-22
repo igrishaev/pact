@@ -1,18 +1,18 @@
 (ns pact.core-async
   (:require
    [pact.core :as p]
-   [clojure.core.async :as a])
-  (:import
-   clojure.core.async.impl.protocols.Channel))
+   #?(:clj [clojure.core.async :as a])
+   #?(:cljs [cljs.core.async :as a])))
 
 
 (defn throwable? [e]
-  (instance? Throwable e))
+  (instance? #?(:clj Throwable :cljs js/Error) e))
 
 
 (extend-protocol p/IPact
 
-  Channel
+  #?(:clj clojure.core.async.impl.channels.ManyToManyChannel
+     :cljs cljs.core.async.impl.channels.ManyToManyChannel)
 
   (-then [this func]
     (let [out

@@ -3,32 +3,34 @@
 A small library for chaining values through forms. It's like a promise but much
 simpler.
 
+Since 0.1.1, supports ClojureScript and its specific types (e.g. Promise).
+
 ## Installation
 
 Lein:
 
 ```clojure
-[com.github.igrishaev/pact "0.1.0"]
+[com.github.igrishaev/pact "0.1.1"]
 ```
 
 Deps.edn
 
 ```clojure
-{com.github.igrishaev/pact {:mvn/version "0.1.0"}}
+{com.github.igrishaev/pact {:mvn/version "0.1.1"}}
 ```
 
-## How it works
+## How It Works
 
 The library declares two universe handlers: `then` and `error`. When you apply
-them to the "good" values, you propagate further. Applying the `error` for them
-does nothing. And vice versa: `then` for the "bad" values does nothing, but
-calling `error` on "bad" values gives you a chance to recover the pipeline.
+them to the "good" values, you propagate further. Applying the `error` for does
+nothing. And vice versa: `then` for the "bad" values does nothing, but calling
+`error` on "bad" values gives you a chance to recover the pipeline.
 
-By default, there is only one "bad" value which is an instance of
-`Throwable`. Other types are considered positive ones. The library carries
-extensions for such async data types as `CompletableFuture`, `Manifold` and
-`core.async`. You only need to require their modules so they extend the `IPact`
-protocol.
+By default, there is only one "bad" value which is an instance of `Throwable`
+(`js/Error` in ClojureScript). Other types are considered positive ones. The
+library carries extensions for such async data types as `CompletableFuture`,
+`Manifold` and `core.async`. You only need to require their modules so they
+extend the `IPact` protocol.
 
 ## Examples
 
@@ -175,7 +177,7 @@ dereferenced when passing to `then`.
 
 The following modules extend the `IPact` protocol for asynchronous types.
 
-### Completable Future
+### Completable Future (Clojure)
 
 The module `pact.comp-future` handles the `CompletableFuture` class available
 since Java 11. The module also provides its own `future` macro to build an
@@ -201,7 +203,7 @@ the end.
 Internally, the `then` handler calls for the `.thenApply` method if a future and
 the `error` handler boils down to `.exceptionally`.
 
-### Manifold
+### Manifold (Clojure)
 
 The `pact.manifold` module makes the handlers work with the amazing Manifold
 library and its types. The Pact library doesn't have Manifold dependency: you've
@@ -228,10 +230,10 @@ macros respectively.
 Once you've put an instance of Manifold deferred, the result will always be a
 `Deferred`.
 
-### Core.async
+### Core.async (Clojure + ClojureScript)
 
-To make the library work with core.async channels, import the `pact.core-async`
-module:
+To make the library work with `core.async` channels, import the
+`pact.core-async` module:
 
 ```clojure
 (ns foobar
@@ -270,8 +272,34 @@ only exceptions. Quick demo:
 ;; "<<< class java.lang.String cannot be cast ..."
 ```
 
+### JS Promise (ClojureScript)
+
+For a JS promise, `then` and `error` handlers resolve to its `.then` and
+`.catch` methods:
+
+```clojure
+(-> (js/Promise.resolve 1)
+    (then-fn inc)
+    (then [x]
+      (js/console.log x)))
+```
+
+A better example with fetching an HTTP resource:
+
+```clojure
+(-> (js/fetch "https://some.api.com/data.json")
+    (then [response]
+      (.json response))
+    (then [data]
+      ...)
+    (error [e]
+      (js/console.log ...)))
+```
+
+
 ## Testing
 
-To run the tests, do `lein test` or just `make test`.
+To run both Clojure and ClojureScript tests, execute `make test-all`. For the
+ClojureScript tests, you need Node.js installed.
 
 &copy; 2022 Ivan Grishaev

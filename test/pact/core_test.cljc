@@ -28,6 +28,15 @@
       :cljs [cljs.test :as t :refer [deftest testing is async]])))
 
 
+;;
+;; A hack for proper indentation of cljs/async macro in Emacs/Cider
+;;
+#?(:clj
+   (defmacro async
+     {:style/indent 1}
+     [_ & body]))
+
+
 #?(:cljs
 
    (do
@@ -35,64 +44,64 @@
      (deftest test-core-async-cljs-ok
 
        (async done
-              (let [in (a/chan)
-                    out (-> in
-                            (then [x]
-                              (+ 1 x))
-                            (then [x]
-                              (+ 1 x))
-                            (then [x]
-                              (str "+" x "+")))]
+         (let [in (a/chan)
+               out (-> in
+                       (then [x]
+                         (+ 1 x))
+                       (then [x]
+                         (+ 1 x))
+                       (then [x]
+                         (str "+" x "+")))]
 
-                (a/go
-                  (a/>! in 1)
-                  (is (= "+3+" (a/<! out))))
+           (a/go
+             (a/>! in 1)
+             (is (= "+3+" (a/<! out))))
 
-                (done))))
+           (done))))
 
      (deftest test-core-async-cljs-recovering-from-error
 
        (async done
 
-              (let [in (a/chan)
-                    out (-> in
-                            (then [x]
-                              (throw (ex-info "Divide by zero" {})))
-                            (then [x]
-                              42)
-                            (error [e]
-                              (ex-message e))
-                            (then [message]
-                              (str "<<< " message " >>>")))]
+         (let [in (a/chan)
+               out (-> in
+                       (then [x]
+                         (throw (ex-info "Divide by zero" {})))
+                       (then [x]
+                         42)
+                       (error [e]
+                         (ex-message e))
+                       (then [message]
+                         (str "<<< " message " >>>")))]
 
-                (a/go
-                  (a/>! in 1)
-                  (is (= "<<< Divide by zero >>>" (a/<! out))))
+           (a/go
+             (a/>! in 1)
+             (is (= "<<< Divide by zero >>>" (a/<! out))))
 
-                (done))))
+           (done))))
 
      (deftest test-core-async-cljs-error-in-error
 
        (async done
 
-              (let [in (a/chan)
-                    out (-> in
-                            (then [x]
-                              (throw (new js/Error "err 1")))
-                            (then [x]
-                              42)
-                            (error [e]
-                              (throw (new js/Error "err 2")))
-                            (error [e]
-                              (ex-message e))
-                            (then [message]
-                              (str "<<< " message " >>>")))]
+         (let [in (a/chan)
+               out (-> in
+                       (then [x]
+                         (throw (new js/Error "err 1")))
+                       (then [x]
+                         42)
+                       (error [e]
+                         (throw (new js/Error "err 2")))
+                       (error [e]
+                         (ex-message e))
+                       (then [message]
+                         (str "<<< " message " >>>")))]
 
-                (a/go
-                  (a/>! in 1)
-                  (is (= "<<< err 2 >>>" (a/<! out))))
+           (a/go
+             (a/>! in 1)
+             (is (= "<<< err 2 >>>" (a/<! out))))
 
-                (done))))))
+           (done))))))
 
 
 #?(:clj
@@ -398,50 +407,50 @@
 
        (async done
 
-              (let [p
-                    (-> (js/Promise.resolve 1)
-                        (then-fn inc)
-                        (then [x]
-                          (str "<<< " x " >>>")))]
+         (let [p
+               (-> (js/Promise.resolve 1)
+                   (then-fn inc)
+                   (then [x]
+                     (str "<<< " x " >>>")))]
 
-                (a/go
-                  (is (= "<<< 2 >>>" (<p! p))))
+           (a/go
+             (is (= "<<< 2 >>>" (<p! p))))
 
-                (done))))
+           (done))))
 
      (deftest test-promise-error
 
        (async done
 
-              (let [p
-                    (-> (js/Promise.resolve 1)
-                        (then [x]
-                          (throw (ex-info "error" {})))
-                        (error [e]
-                          (ex-message e)))]
+         (let [p
+               (-> (js/Promise.resolve 1)
+                   (then [x]
+                     (throw (ex-info "error" {})))
+                   (error [e]
+                     (ex-message e)))]
 
-                (a/go
-                  (is (= "error" (<p! p))))
+           (a/go
+             (is (= "error" (<p! p))))
 
-                (done))))
+           (done))))
 
      (deftest test-promise-error-in-error
 
        (async done
 
-              (let [p
-                    (-> (js/Promise.resolve 1)
-                        (then [x]
-                          (throw (ex-info "error1" {})))
-                        (error [e]
-                          (throw (ex-info "error2" {})))
-                        (error [e]
-                          (ex-message e)))]
+         (let [p
+               (-> (js/Promise.resolve 1)
+                   (then [x]
+                     (throw (ex-info "error1" {})))
+                   (error [e]
+                     (throw (ex-info "error2" {})))
+                   (error [e]
+                     (ex-message e)))]
 
-                (a/go
-                  (is (= "error2" (<p! p))))
+           (a/go
+             (is (= "error2" (<p! p))))
 
-                (done))))))
+           (done))))))
 
 
 

@@ -22,8 +22,8 @@ Deps.edn
 ## How It Works
 
 The library declares two universe handlers: `then` and `error`. When you apply
-them to the "good" values, you propagate further. Applying the `error` for does
-nothing. And vice versa: `then` for the "bad" values does nothing, but calling
+them to the "good" values, you propagate further. Applying `error` to "good" things 
+does nothing. And vice versa: `then` for the "bad" values does nothing, but calling
 `error` on "bad" values gives you a chance to recover the pipeline.
 
 By default, there is only one "bad" value which is an instance of `Throwable`
